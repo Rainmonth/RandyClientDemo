@@ -10,6 +10,9 @@ import okhttp3.Response;
 
 /**
  * 请求头拦截
+ * <p>
+ * 通过拦截器想请求中添加指定header
+ * </p>
  * Created by RandyZhang on 2017/4/11.
  */
 
@@ -28,7 +31,8 @@ public class HeaderInterceptor<T> implements Interceptor {
         if (headers != null && headers.size() > 0) {
             Set<String> keys = headers.keySet();
             for (String headerKey : keys) {
-                builder.addHeader(headerKey, headers.get(headerKey) == null? "": (String)headers.get(headerKey)).build();
+                builder.addHeader(headerKey, headers.get(headerKey) == null ? "" :
+                        (String) headers.get(headerKey)).build();
             }
         }
         return chain.proceed(builder.build());
