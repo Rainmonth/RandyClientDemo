@@ -695,6 +695,7 @@ public final class RandyClient {
     private void executeDownload(String key, String savePath, String name,
                                  DownloadCallback callBack) {
         if (downloadObservableMap.get(key) != null) {
+            // 根据observable key获取到对应的observable
             downloadObservableMap.get(key).compose(downloadSchedulersTransformer)
                     .compose(getExceptionTransformer())
                     .subscribe(new DownloadSubscriber<>(key, savePath, name, callBack, mContext));
