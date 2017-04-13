@@ -1,10 +1,10 @@
-package com.randy.retrofitclient.download;
+package com.randy.randyclient.download;
 
 import android.content.Context;
 import android.util.Log;
 
-import com.randy.retrofitclient.base.BaseSubscriber;
-import com.randy.retrofitclient.exception.SelfDefineThrowable;
+import com.randy.randyclient.base.BaseSubscriber;
+import com.randy.randyclient.exception.SelfDefineThrowable;
 
 /**
  * 下载订阅
