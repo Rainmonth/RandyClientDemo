@@ -11,6 +11,8 @@ import com.randy.randyclient.exception.SelfDefineThrowable;
  */
 public class DownloadSubscriber<ResponseBody extends okhttp3.ResponseBody>
         extends BaseSubscriber<ResponseBody> {
+    private final String TAG = DownloadSubscriber.class.getSimpleName();
+
     private DownloadCallback callBack;
     private Context context;
     private String savePath;
@@ -44,7 +46,7 @@ public class DownloadSubscriber<ResponseBody extends okhttp3.ResponseBody>
 
     @Override
     public void onExceptionError(final SelfDefineThrowable e) {
-        Log.e(DownloadManager.TAG, "DownloadSubscriber:>>>> onError:" + e.getMessage());
+        Log.e(TAG, "DownloadSubscriber:>>>> onError:" + e.getMessage());
         if (null != callBack) {
             callBack.onError(e);
         }
@@ -52,8 +54,8 @@ public class DownloadSubscriber<ResponseBody extends okhttp3.ResponseBody>
 
     @Override
     public void onNext(ResponseBody responseBody) {
-        Log.d(DownloadManager.TAG, "DownloadSubscriber:>>>> onNext");
-        new DownloadManager(callBack).writeResponseBodyToDisk(key, savePath, name, context,
+        Log.d(TAG, "DownloadSubscriber:>>>> onNext");
+        new DownloadHelper(callBack).writeResponseBodyToDisk(key, savePath, name, context,
                 responseBody);
 
     }

@@ -13,41 +13,41 @@ import com.randy.randyclient.exception.SelfDefineThrowable;
 public class UploadSubscriber<RequestBody extends okhttp3.RequestBody>
         extends BaseSubscriber<RequestBody> {
 
-    private UploadCallback callback;
+    private UploadCallback uploadCallback;
     private String key;
 
-    public UploadSubscriber(Context context, UploadCallback callback, String key) {
+    public UploadSubscriber(Context context, UploadCallback uploadCallback, String key) {
         super(context);
-        this.callback = callback;
+        this.uploadCallback = uploadCallback;
         this.key = key;
     }
 
     @Override
     public void onStart() {
         super.onStart();
-        if (null != callback) {
-            callback.onStart(key);
+        if (null != uploadCallback) {
+            uploadCallback.onStart(key);
         }
     }
 
     @Override
     public void onNext(RequestBody requestBody) {
         ProgressRequestBody progressRequestBody = (ProgressRequestBody) requestBody;
-
+        uploadCallback.onSuccess(key);
     }
 
     @Override
     public void onCompleted() {
         super.onCompleted();
-        if (null != callback) {
-            callback.onComplete(key);
+        if (null != uploadCallback) {
+            uploadCallback.onComplete(key);
         }
     }
 
     @Override
     public void onExceptionError(SelfDefineThrowable e) {
-        if (null != callback) {
-            callback.onError(key, e);
+        if (null != uploadCallback) {
+            uploadCallback.onError(key, e);
         }
     }
 }

@@ -19,14 +19,14 @@ import java.io.OutputStream;
 import okhttp3.ResponseBody;
 
 /**
- * 下载文件管理器
+ * 下载帮助类
  * Created by RandyZhang on 2017/4/12.
  */
 
-public class DownloadManager {
+public class DownloadHelper {
     private DownloadCallback callBack;
 
-    public static final String TAG = DownloadManager.class.getSimpleName();
+    public static final String TAG = DownloadHelper.class.getSimpleName();
 
     private static String APK_CONTENT_TYPE = "application/vnd.android.package-archive";
 
@@ -46,19 +46,19 @@ public class DownloadManager {
 
     private String key;
 
-    public DownloadManager(DownloadCallback callBack) {
+    public DownloadHelper(DownloadCallback callBack) {
         this.callBack = callBack;
         handler = new Handler(Looper.getMainLooper());
     }
 
-    private static DownloadManager sInstance;
+    private static DownloadHelper sInstance;
 
     /**
      * DownLoadManager getInstance
      */
-    public static synchronized DownloadManager getInstance(DownloadCallback callBack) {
+    public static synchronized DownloadHelper getInstance(DownloadCallback callBack) {
         if (sInstance == null) {
-            sInstance = new DownloadManager(callBack);
+            sInstance = new DownloadHelper(callBack);
         }
         return sInstance;
     }

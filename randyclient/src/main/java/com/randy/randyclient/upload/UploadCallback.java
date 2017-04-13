@@ -3,56 +3,43 @@ package com.randy.randyclient.upload;
 import com.randy.randyclient.exception.SelfDefineThrowable;
 
 /**
- * 上传文件回调
- * Created by RandyZhang on 2017/4/12.
+ * 上传回调
+ * Created by RandyZhang on 2017/4/13.
  */
 
 public abstract class UploadCallback {
     /**
-     * 上传开始
-     *
-     * @param key 上传任务对应的key
+     * @param key 上传文件对应的key
      */
-    public void onStart(String key) {
+    void onStart(String key) {
 
     }
 
     /**
-     * 上传进度
-     *
-     * @param key           上传任务对应的key
-     * @param bytesUploaded 已上传bytes
-     * @param totalBytes    总共bytes
+     * @param key 上传文件对应的key
      */
-    public void onProgress(String key, int bytesUploaded, int totalBytes) {
+    void onComplete(String key) {
 
     }
 
     /**
-     * 上传完成
-     *
-     * @param key 上传任务对应的key
+     * @param key 上传文件对应的key
+     * @param e   error message
      */
-    public void onComplete(String key) {
+    void onError(String key, SelfDefineThrowable e) {
 
     }
 
     /**
-     * 上传成功
-     *
-     * @param key 上传任务对应的key
+     * @param currentUploadedSize 已上传大小
+     * @param totalSize           总大小
      */
-    public void onSuccess(String key) {
-
-    }
+    abstract void onUpdateProgress(long currentUploadedSize, long totalSize);
 
     /**
-     * 上传出错
-     *
-     * @param key                 上传任务对应的key
-     * @param selfDefineThrowable 自定义异常
+     * @param key 上传文件对应的key
      */
-    public void onError(String key, SelfDefineThrowable selfDefineThrowable) {
+    void onSuccess(String key) {
 
     }
 }

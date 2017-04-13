@@ -19,6 +19,9 @@ import com.randy.randyclient.download.DownloadSubscriber;
 import com.randy.randyclient.download.DownloadCallback;
 import com.randy.randyclient.exception.ExceptionHandle;
 import com.randy.randyclient.helper.ClientHttpsFactory;
+import com.randy.randyclient.upload.ProgressRequestBody;
+import com.randy.randyclient.upload.UploadCallback;
+import com.randy.randyclient.upload.UploadSubscriber;
 import com.randy.randyclient.util.FileUtil;
 import com.randy.randyclient.util.Utils;
 
@@ -151,6 +154,10 @@ public final class RandyClient {
     private Observable<ResponseBody> downloadObservable;
     // download observable map
     private Map<String, Observable<ResponseBody>> downloadObservableMap = new HashMap<>();
+    // upload observable
+    private Observable<ResponseBody> uploadObservable;
+    // upload observable map
+    private Map<String, Observable<ResponseBody>> uploadObservableMap = new HashMap<>();
     // callback executor
     private Executor callbackExecutor;
 
@@ -538,6 +545,7 @@ public final class RandyClient {
                 .subscribe(subscriber);
     }
 
+
     /**
      * upload File
      *
@@ -682,6 +690,25 @@ public final class RandyClient {
         }
         downloadObservableMap.put(key, downloadObservable);
         executeDownload(key, savePath, name, callBack);
+    }
+
+    public void upload(String key, String url, ProgressRequestBody requestBody) {
+        UploadCallback uploadCallback = requestBody.getUploadCallback();
+        if (uploadObservableMap.get(key) == null) {
+            uploadObservable = apiManager.uploadFile(url, requestBody);
+        } else {
+            uploadObservable = uploadObservableMap.get(key);
+        }
+        executeUpload(key, uploadCallback);
+    }
+
+    private void executeUpload(String key, UploadCallback uploadCallback) {
+        if (uploadObservableMap.get(key) != null) {
+            uploadObservableMap.get(key)
+                    .compose(uploadSchedulersTransformer)
+                    .compose(this.getExceptionTransformer())
+                    .subscribe(new UploadSubscriber(mContext, uploadCallback, key));
+        }
     }
 
     /**

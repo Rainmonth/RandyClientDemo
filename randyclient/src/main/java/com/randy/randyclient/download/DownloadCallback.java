@@ -29,6 +29,10 @@ public abstract class DownloadCallback {
     public void onProgress(String key, long fileSizeDownloaded, long totalSize) {
     }
 
+    public void onResponseProgress(long fileSizeDownloaded, long totalSize, boolean isAllRead) {
+
+    }
+
     /**
      * 需运行在UI线程
      *
