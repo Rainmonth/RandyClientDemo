@@ -1,4 +1,4 @@
-package com.randy.randyclient.helper;
+package com.randy.randyclientdemo.bean;
 
 /**
  * Created by RandyZhang on 2017/4/12.

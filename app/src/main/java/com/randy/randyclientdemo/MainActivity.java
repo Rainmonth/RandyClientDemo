@@ -11,7 +11,7 @@ import com.randy.randyclient.RandyClient;
 import com.randy.randyclient.base.BaseResponse;
 import com.randy.randyclient.base.BaseResponseCallback;
 import com.randy.randyclient.exception.SelfDefineThrowable;
-import com.randy.randyclient.helper.Api;
+import com.randy.randyclientdemo.bean.Api;
 import com.randy.randyclientdemo.bean.LoginResultBean;
 
 import java.util.HashMap;
