@@ -35,8 +35,8 @@ public class ReflectionUtil {
 
     /**
      * {@link Type#toString()} value is the fully qualified class name prefixed
-     * with {@link ReflectionUtil#TYPE_CLASS_NAME_PREFIX}. This method will substring it, for it to be eligible
-     * for {@link Class#forName(String)}.
+     * with {@link ReflectionUtil#TYPE_CLASS_NAME_PREFIX}. This method will substring it, for it
+     * to be eligible for {@link Class#forName(String)}.
      *
      * @param type the {@code Type} value whose class name is needed.
      * @return {@code String} class name of the invoked {@code type}.
