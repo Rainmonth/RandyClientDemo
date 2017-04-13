@@ -149,6 +149,8 @@ public final class RandyClient {
     private static OkHttpClient okHttpClient;
     // context
     private static Context mContext;
+    // 是否开启数据库缓存
+    private static boolean isDbCache = false;
     private okhttp3.Call.Factory callFactory;
     // download observable
     private Observable<ResponseBody> downloadObservable;
@@ -1078,7 +1080,9 @@ public final class RandyClient {
         }
 
         /**
-         * @param cache
+         * 添加OKHttp3 cache缓存
+         *
+         * @param cache             {@link okhttp3.Cache}
          * @param cacheControlValue Cache-Control
          */
         private Builder addCache(Cache cache, final String cacheControlValue) {
