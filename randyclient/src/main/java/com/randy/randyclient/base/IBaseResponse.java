@@ -7,12 +7,14 @@ import com.randy.randyclient.exception.SelfDefineThrowable;
  *
  * @param <T> 最终得到的数据类型
  */
-public interface BaseResponseCallback<T> {
+public interface IBaseResponse<T> {
     void onStart();
 
     void onCompleted();
 
     void onExceptionError(SelfDefineThrowable e);
+
+    void onReadCacheSuccess(T response);
 
     void onSuccess(T response);
 }
