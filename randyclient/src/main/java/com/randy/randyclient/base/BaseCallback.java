@@ -9,6 +9,7 @@ import com.randy.randyclient.exception.SelfDefineThrowable;
  */
 
 public abstract class BaseCallback<T> implements IBaseResponse<T> {
+
     @Override
     public void onStart() {
 

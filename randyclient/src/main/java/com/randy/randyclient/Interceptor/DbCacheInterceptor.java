@@ -6,6 +6,7 @@ import com.randy.randyclient.helper.DbCacheHelper;
 import java.io.IOException;
 import java.nio.charset.Charset;
 
+import okhttp3.FormBody;
 import okhttp3.Interceptor;
 import okhttp3.MediaType;
 import okhttp3.Request;
@@ -21,13 +22,13 @@ import okio.BufferedSource;
 
 public class DbCacheInterceptor implements Interceptor {
     private boolean isDbCache = false;
-    private String dbCacheUrl;
+    private String baseUrl;
     private DbCacheHelper dbCacheHelper;
 
-    public DbCacheInterceptor(boolean isDbCache, String dbCacheUrl, DbCacheHelper dbCacheHelper) {
+    public DbCacheInterceptor(boolean isDbCache, String baseUrl) {
         this.isDbCache = isDbCache;
-        this.dbCacheUrl = dbCacheUrl;
-        this.dbCacheHelper = dbCacheHelper;
+        this.baseUrl = baseUrl;
+        this.dbCacheHelper = DbCacheHelper.getInstance();
     }
 
     @Override
@@ -45,6 +46,8 @@ public class DbCacheInterceptor implements Interceptor {
                 charset = contentType.charset();
             }
             String bodyString = buffer.clone().readString(charset);
+            String dbCacheUrl = getPathUrl(request);
+
             DbCacheInfo dbCacheInfo = dbCacheHelper.queryDbCacheByUrl(dbCacheUrl);
             long time = System.currentTimeMillis();
             if (dbCacheInfo == null) {
@@ -58,5 +61,28 @@ public class DbCacheInterceptor implements Interceptor {
         }
 
         return response;
+    }
+
+    /**
+     * 获取带参数url
+     *
+     * @param request Request object
+     */
+    private String getPathUrl(Request request) {
+        StringBuilder sb = new StringBuilder();// 用于构建url+parameter
+        sb.append(request.url());//  添加url
+        if ("POST".equals(request.method())) {
+            if (request.body() instanceof FormBody) {// 添加post参数
+                FormBody formBody = (FormBody) request.body();
+                sb.append("?");
+                for (int i = 0; i < formBody.size(); i++) {
+                    sb.append(formBody.encodedName(i)).append("=").
+                            append(formBody.encodedValue(i)).append("&");
+                }
+                sb.delete(sb.length() - 1, sb.length());
+                sb.delete(0, baseUrl.length());
+            }
+        }
+        return sb.toString();
     }
 }

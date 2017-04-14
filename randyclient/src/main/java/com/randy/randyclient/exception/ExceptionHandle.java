@@ -73,6 +73,11 @@ public class ExceptionHandle {
          * 格式错误
          */
         public static final int FORMAT_ERROR = 1008;
+
+        /**
+         * 读取数据库缓存错误
+         */
+        public static final int READ_DB_CACHE_ERROR = -1000;
     }
 
     public static SelfDefineThrowable handleException(Throwable throwable) {

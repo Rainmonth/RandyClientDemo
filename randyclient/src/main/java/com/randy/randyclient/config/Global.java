@@ -7,6 +7,8 @@ import java.util.Locale;
  */
 
 public class Global {
+    // todo chage the value
+    public static final long DB_CACHE_VALID_TIME = 60 * 1000;
     public static Locale LOCALE = Locale.CHINA;
     public static String TAG = "RandyClient";
 }

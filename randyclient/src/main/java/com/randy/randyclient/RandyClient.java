@@ -5,11 +5,13 @@ import android.support.annotation.NonNull;
 import android.util.Log;
 
 import com.randy.randyclient.Interceptor.CacheInterceptor;
+import com.randy.randyclient.Interceptor.DbCacheInterceptor;
 import com.randy.randyclient.Interceptor.HeaderInterceptor;
+import com.randy.randyclient.Interceptor.LogInterceptor;
 import com.randy.randyclient.Interceptor.OfflineCacheInterceptor;
 import com.randy.randyclient.base.BaseApiService;
 import com.randy.randyclient.base.BaseResponse;
-import com.randy.randyclient.base.BaseResponseCallback;
+import com.randy.randyclient.base.IBaseResponse;
 import com.randy.randyclient.base.BaseSubscriber;
 import com.randy.randyclient.base.FinalSubscriber;
 import com.randy.randyclient.cache.CookieCacheImpl;
@@ -49,7 +51,6 @@ import okhttp3.MultipartBody;
 import okhttp3.OkHttpClient;
 import okhttp3.RequestBody;
 import okhttp3.ResponseBody;
-import okhttp3.logging.HttpLoggingInterceptor;
 import retrofit2.CallAdapter;
 import retrofit2.Converter;
 import retrofit2.Retrofit;
@@ -72,7 +73,7 @@ public final class RandyClient {
     /**
      * 普通请求线程切换
      */
-    final Observable.Transformer normalSchedulersTransformer
+    private final Observable.Transformer normalSchedulersTransformer
             = new Observable.Transformer() {
         @Override
         public Object call(Object o) {
@@ -85,7 +86,7 @@ public final class RandyClient {
     /**
      * 下载请求线程切换
      */
-    final Observable.Transformer downloadSchedulersTransformer
+    private final Observable.Transformer downloadSchedulersTransformer
             = new Observable.Transformer() {
         @Override
         public Object call(Object o) {
@@ -98,7 +99,7 @@ public final class RandyClient {
     /**
      * 上传请求线程切换
      */
-    final Observable.Transformer uploadSchedulersTransformer
+    private final Observable.Transformer uploadSchedulersTransformer
             = new Observable.Transformer() {
         @Override
         public Object call(Object o) {
@@ -174,11 +175,12 @@ public final class RandyClient {
     /**
      * package constructor
      */
-    RandyClient(okhttp3.Call.Factory callFactory, String baseUrl, Map<String, String> headers,
-                Map<String, String> parameters, BaseApiService apiManager,
-                List<Converter.Factory> converterFactories,
-                List<CallAdapter.Factory> adapterFactories,
-                Executor callbackExecutor, boolean validateEagerly) {
+    private RandyClient(okhttp3.Call.Factory callFactory, String baseUrl,
+                        Map<String, String> headers,
+                        Map<String, String> parameters, BaseApiService apiManager,
+                        List<Converter.Factory> converterFactories,
+                        List<CallAdapter.Factory> adapterFactories,
+                        Executor callbackExecutor, boolean validateEagerly) {
         RandyClient.headers = headers;
         RandyClient.parameters = parameters;
         RandyClient.apiManager = apiManager;
@@ -228,7 +230,7 @@ public final class RandyClient {
      * @return T
      */
     public <T> T executeGet(String url, Map<String, Object> paramMap,
-                            BaseResponseCallback<T> callBack) {
+                            IBaseResponse<T> callBack) {
         final Type[] types = callBack.getClass().getGenericInterfaces();
         if (genericTypeHandle(types) == null || genericTypeHandle(types).size() == 0) {
             return null;
@@ -238,7 +240,7 @@ public final class RandyClient {
         return (T) apiManager.executeGet(url, paramMap)
                 .compose(normalSchedulersTransformer)
                 .compose(this.getExceptionTransformer())
-                .subscribe(new FinalSubscriber(mContext, finalNeedType, callBack));
+                .subscribe(getBaseSubscriber(isDbCache, url, paramMap, callBack, finalNeedType));
     }
 
     /**
@@ -271,7 +273,7 @@ public final class RandyClient {
      * @return T
      */
     public <T> T executePost(String url, @FieldMap(encoded = true) Map<String, Object> paramMap,
-                             BaseResponseCallback<T> callBack) {
+                             IBaseResponse<T> callBack) {
         final Type[] types = callBack.getClass().getGenericInterfaces();
         if (genericTypeHandle(types) == null || genericTypeHandle(types).size() == 0) {
             return null;
@@ -281,8 +283,18 @@ public final class RandyClient {
         return (T) apiManager.executePost(url, paramMap)
                 .compose(normalSchedulersTransformer)
                 .compose(this.getExceptionTransformer())
-                .subscribe(new FinalSubscriber(mContext, finalNeedType, callBack));
+                .subscribe(getBaseSubscriber(isDbCache, url, paramMap, callBack, finalNeedType));
     }
+
+    @NonNull
+    private <T> BaseSubscriber getBaseSubscriber(boolean isDbCache, String url,
+                                                 Map<String, Object> paramMap,
+                                                 IBaseResponse<T> callBack, Type finalNeedType) {
+
+        return isDbCache ? new FinalSubscriber(mContext, finalNeedType, url, paramMap, callBack) :
+                new FinalSubscriber(mContext, finalNeedType, callBack);
+    }
+
 
     /**
      * retrofit post
@@ -314,7 +326,7 @@ public final class RandyClient {
      * @return T
      */
     public <T> T executeBody(String url, @Body RequestBody body,
-                             BaseResponseCallback<T> callBack) {
+                             IBaseResponse<T> callBack) {
         final Type[] types = callBack.getClass().getGenericInterfaces();
         if (genericTypeHandle(types) == null || genericTypeHandle(types).size() == 0) {
             return null;
@@ -326,7 +338,6 @@ public final class RandyClient {
                 .compose(this.getExceptionTransformer())
                 .subscribe(new FinalSubscriber(mContext, finalNeedType, callBack));
     }
-
 
     /**
      * retrofit form
@@ -358,7 +369,7 @@ public final class RandyClient {
      * @return T
      */
     public <T> T executeForm(String url, @FieldMap(encoded = true) Map<String, Object> paramMap,
-                             BaseResponseCallback<T> callBack) {
+                             IBaseResponse<T> callBack) {
         final Type[] types = callBack.getClass().getGenericInterfaces();
         if (genericTypeHandle(types) == null || genericTypeHandle(types).size() == 0) {
             return null;
@@ -395,7 +406,7 @@ public final class RandyClient {
      * @param jsonStr Json String
      * @return parsed data T
      */
-    public <T> T executeJson(final String url, final String jsonStr, final BaseResponseCallback<T> callBack) {
+    public <T> T executeJson(final String url, final String jsonStr, final IBaseResponse<T> callBack) {
         final Type[] types = callBack.getClass().getGenericInterfaces();
         if (genericTypeHandle(types) == null || genericTypeHandle(types).size() == 0) {
             return null;
@@ -438,7 +449,7 @@ public final class RandyClient {
      * @return T
      */
     public <T> T executePut(String url, @FieldMap(encoded = true) Map<String, Object> paramMap,
-                            BaseResponseCallback<T> callBack) {
+                            IBaseResponse<T> callBack) {
         final Type[] types = callBack.getClass().getGenericInterfaces();
         if (genericTypeHandle(types) == null || genericTypeHandle(types).size() == 0) {
             return null;
@@ -481,7 +492,7 @@ public final class RandyClient {
      * @return T
      */
     public <T> T executeDelete(String url, Map<String, Object> paramMap,
-                               BaseResponseCallback<T> callBack) {
+                               IBaseResponse<T> callBack) {
         final Type[] types = callBack.getClass().getGenericInterfaces();
         if (genericTypeHandle(types) == null || genericTypeHandle(types).size() == 0) {
             return null;
@@ -664,7 +675,6 @@ public final class RandyClient {
      */
     public void downloadMin(String key, String url, String savePath, String name,
                             DownloadCallback callBack) {
-
         if (downloadObservableMap.get(key) == null) {
             downloadObservable = apiManager.downloadSmallFile(url);
         } else {
@@ -776,6 +786,7 @@ public final class RandyClient {
         private Boolean isLog = false;
         private Boolean isCookie = false;
         private Boolean isCache = true;
+        private Boolean isDbCache = false;
         private List<InputStream> certificateList;
         private HostnameVerifier hostnameVerifier;
         private CertificatePinner certificatePinner;
@@ -837,6 +848,20 @@ public final class RandyClient {
         }
 
         /**
+         * Sets the default write timeout for new connections. A value of 0 means no timeout,
+         * otherwise values must be between 1 and {@link TimeUnit #MAX_VALUE} when converted to
+         * milliseconds.
+         */
+        public Builder writeTimeout(int timeout, TimeUnit unit) {
+            if (timeout != -1) {
+                okHttpClientBuilder.writeTimeout(timeout, unit);
+            } else {
+                okHttpClientBuilder.writeTimeout(DEFAULT_TIMEOUT, TimeUnit.SECONDS);
+            }
+            return this;
+        }
+
+        /**
          * Sets the default connect timeout for new connections. A value of 0 means no timeout,
          * otherwise values must be between 1 and {@link Integer#MAX_VALUE} when converted to
          * milliseconds.
@@ -876,6 +901,11 @@ public final class RandyClient {
             return this;
         }
 
+        public Builder addDbCache(boolean isDbCache) {
+            this.isDbCache = isDbCache;
+            return this;
+        }
+
         /**
          * open the proxy
          *
@@ -883,20 +913,6 @@ public final class RandyClient {
          */
         public Builder proxy(Proxy proxy) {
             okHttpClientBuilder.proxy(Utils.checkNotNull(proxy, "proxy == null"));
-            return this;
-        }
-
-        /**
-         * Sets the default write timeout for new connections. A value of 0 means no timeout,
-         * otherwise values must be between 1 and {@link TimeUnit #MAX_VALUE} when converted to
-         * milliseconds.
-         */
-        public Builder writeTimeout(int timeout, TimeUnit unit) {
-            if (timeout != -1) {
-                okHttpClientBuilder.writeTimeout(timeout, unit);
-            } else {
-                okHttpClientBuilder.writeTimeout(DEFAULT_TIMEOUT, TimeUnit.SECONDS);
-            }
             return this;
         }
 
@@ -1135,8 +1151,7 @@ public final class RandyClient {
             }
             retrofitBuilder.addCallAdapterFactory(callAdapterFactory);
             if (isLog) {
-                okHttpClientBuilder.addNetworkInterceptor(new HttpLoggingInterceptor()
-                        .setLevel(HttpLoggingInterceptor.Level.HEADERS));
+                okHttpClientBuilder.addNetworkInterceptor(new LogInterceptor());
             }
             if (sslSocketFactory != null) {
                 okHttpClientBuilder.sslSocketFactory(sslSocketFactory);
@@ -1164,6 +1179,10 @@ public final class RandyClient {
 
             if (cache != null) {
                 okHttpClientBuilder.cache(cache);
+            }
+
+            if (isDbCache) {
+                DbCacheInterceptor dbCacheInterceptor = new DbCacheInterceptor(isDbCache, baseUrl);
             }
 
             /*
