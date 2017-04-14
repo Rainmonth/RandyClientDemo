@@ -9,7 +9,7 @@ import android.widget.Toast;
 
 import com.randy.randyclient.RandyClient;
 import com.randy.randyclient.base.BaseResponse;
-import com.randy.randyclient.base.BaseResponseCallback;
+import com.randy.randyclient.base.BaseCallback;
 import com.randy.randyclient.exception.SelfDefineThrowable;
 import com.randy.randyclientdemo.bean.Api;
 import com.randy.randyclientdemo.bean.LoginResultBean;
@@ -36,10 +36,9 @@ public class MainActivity extends AppCompatActivity {
         setContentView(R.layout.activity_main);
         ButterKnife.bind(this);
         RandyClient.Builder builder = new RandyClient.Builder(this);
-         randyClient = builder.baseUrl(Api.BaseUrl)
+        randyClient = builder.baseUrl(Api.BaseUrl)
                 .addLog(true)
                 .build();
-//        new RandyClient.Builder(this).baseUrl(Api.BaseUrl)
 
     }
 
@@ -47,24 +46,46 @@ public class MainActivity extends AppCompatActivity {
     public void onViewClicked(View view) {
         switch (view.getId()) {
             case R.id.tv_is_register:
-                Map<String, Object> paramMap = new HashMap<>();
-                paramMap.put("mobile", "15868480733");
-                paramMap.put("password", "87b750fdfeb4468f58c3247b303704ab");
-                randyClient.executePost(Api.LOGIN, paramMap, new BaseResponseCallback<BaseResponse<LoginResultBean>>() {
+                register();
+                break;
+            case R.id.tv_login:
+                break;
+        }
+    }
+
+    /**
+     * 注册
+     */
+    void register() {
+        Map<String, Object> paramMap = new HashMap<>();
+        paramMap.put("mobile", "15868480733");
+        paramMap.put("password", "87b750fdfeb4468f58c3247b303704ab");
+        randyClient.executePost(Api.LOGIN, paramMap,
+                new BaseCallback<BaseResponse<LoginResultBean>>() {
+
                     @Override
                     public void onStart() {
+                        super.onStart();
                         Toast.makeText(MainActivity.this, "onStart", Toast.LENGTH_SHORT).show();
                     }
 
                     @Override
                     public void onCompleted() {
+                        super.onCompleted();
                         Toast.makeText(MainActivity.this, "onCompleted", Toast.LENGTH_SHORT).show();
                     }
 
                     @Override
                     public void onExceptionError(SelfDefineThrowable e) {
-                        Toast.makeText(MainActivity.this, "onExceptionError", Toast.LENGTH_SHORT).show();
+                        super.onExceptionError(e);
+                        Toast.makeText(MainActivity.this, "onExceptionError", Toast.LENGTH_SHORT)
+                                .show();
                         Log.e("onExceptionError", e.getMessage());
+                    }
+
+                    @Override
+                    public void onReadCacheSuccess(BaseResponse<LoginResultBean> response) {
+                        super.onReadCacheSuccess(response);
                     }
 
                     @Override
@@ -73,9 +94,5 @@ public class MainActivity extends AppCompatActivity {
                         Log.i("onSuccess", response.getData().toString());
                     }
                 });
-                break;
-            case R.id.tv_login:
-                break;
-        }
     }
 }
