@@ -9,6 +9,7 @@
 3. support multifile download;
 4. support cache(via memory, database, etc);
 5. support config model;
+6. learn the usage of [greenDao](https://github.com/greenrobot/greenDAO);
 
 ## Features
 

@@ -56,7 +56,7 @@ public class DbCacheInterceptor implements Interceptor {
             } else {
                 dbCacheInfo.setCacheTime(time);
                 dbCacheInfo.setCacheContent(bodyString);
-                dbCacheHelper.updateDbCacheInfo(dbCacheUrl);
+                dbCacheHelper.updateDbCacheInfo(dbCacheInfo);
             }
         }
 
