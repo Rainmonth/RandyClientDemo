@@ -231,12 +231,15 @@ public final class RandyClient {
      */
     public <T> T executeGet(String url, Map<String, Object> paramMap,
                             IBaseResponse<T> callBack) {
-        final Type[] types = callBack.getClass().getGenericInterfaces();
-        if (genericTypeHandle(types) == null || genericTypeHandle(types).size() == 0) {
-            return null;
-        }
-        final Type finalNeedType = genericTypeHandle(types).get(0);
-        Log.d(TAG, "-->:" + "Type:" + types[0]);
+//        final Type[] types = callBack.getClass().getGenericInterfaces();
+//        if (genericTypeHandle(types) == null || genericTypeHandle(types).size() == 0) {
+//            return null;
+//        }
+//        final Type finalNeedType = genericTypeHandle(types).get(0);
+        Type genType = callBack.getClass().getGenericSuperclass();
+        Type[] types = ((ParameterizedType) genType).getActualTypeArguments();
+        final Type finalNeedType = types[0];
+        Log.d(TAG,  "FinalNeedType:" + types[0]);
         return (T) apiManager.executeGet(url, paramMap)
                 .compose(normalSchedulersTransformer)
                 .compose(this.getExceptionTransformer())
@@ -274,22 +277,25 @@ public final class RandyClient {
      */
     public <T> T executePost(String url, @FieldMap(encoded = true) Map<String, Object> paramMap,
                              IBaseResponse<T> callBack) {
-        final Type[] types = callBack.getClass().getGenericInterfaces();
-        if (genericTypeHandle(types) == null || genericTypeHandle(types).size() == 0) {
-            return null;
-        }
-        final Type finalNeedType = genericTypeHandle(types).get(0);
-        Log.d(TAG, "-->:" + "Type:" + types[0]);
+//        final Type[] types = callBack.getClass().getGenericInterfaces();
+//        if (genericTypeHandle(types) == null || genericTypeHandle(types).size() == 0) {
+//            return null;
+//        }
+//        final Type finalNeedType = genericTypeHandle(types).get(0);
+        Type genType = callBack.getClass().getGenericSuperclass();
+        Type[] types = ((ParameterizedType) genType).getActualTypeArguments();
+        final Type finalNeedType = types[0];
+        Log.d(TAG,  "FinalNeedType:" + types[0]);
+        BaseSubscriber<T> subscriber = getBaseSubscriber(isDbCache, url, paramMap, callBack, finalNeedType);
         return (T) apiManager.executePost(url, paramMap)
                 .compose(normalSchedulersTransformer)
-                .compose(this.getExceptionTransformer())
-                .subscribe(getBaseSubscriber(isDbCache, url, paramMap, callBack, finalNeedType));
+                .compose(getExceptionTransformer())
+                .subscribe(subscriber);
     }
 
-    @NonNull
-    private <T> BaseSubscriber getBaseSubscriber(boolean isDbCache, String url,
-                                                 Map<String, Object> paramMap,
-                                                 IBaseResponse<T> callBack, Type finalNeedType) {
+    private <T> BaseSubscriber<T> getBaseSubscriber(boolean isDbCache, String url,
+                                                    Map<String, Object> paramMap,
+                                                    IBaseResponse<T> callBack, Type finalNeedType) {
 
         return isDbCache ? new FinalSubscriber(mContext, finalNeedType, url, paramMap, callBack) :
                 new FinalSubscriber(mContext, finalNeedType, callBack);
@@ -327,12 +333,15 @@ public final class RandyClient {
      */
     public <T> T executeBody(String url, @Body RequestBody body,
                              IBaseResponse<T> callBack) {
-        final Type[] types = callBack.getClass().getGenericInterfaces();
-        if (genericTypeHandle(types) == null || genericTypeHandle(types).size() == 0) {
-            return null;
-        }
-        final Type finalNeedType = genericTypeHandle(types).get(0);
-        Log.d(TAG, "-->:" + "Type:" + types[0]);
+//        final Type[] types = callBack.getClass().getGenericInterfaces();
+//        if (genericTypeHandle(types) == null || genericTypeHandle(types).size() == 0) {
+//            return null;
+//        }
+//        final Type finalNeedType = genericTypeHandle(types).get(0);
+        Type genType = callBack.getClass().getGenericSuperclass();
+        Type[] types = ((ParameterizedType) genType).getActualTypeArguments();
+        final Type finalNeedType = types[0];
+        Log.d(TAG,  "FinalNeedType:" + types[0]);
         return (T) apiManager.executePostBody(url, body)
                 .compose(normalSchedulersTransformer)
                 .compose(this.getExceptionTransformer())
@@ -370,12 +379,15 @@ public final class RandyClient {
      */
     public <T> T executeForm(String url, @FieldMap(encoded = true) Map<String, Object> paramMap,
                              IBaseResponse<T> callBack) {
-        final Type[] types = callBack.getClass().getGenericInterfaces();
-        if (genericTypeHandle(types) == null || genericTypeHandle(types).size() == 0) {
-            return null;
-        }
-        final Type finalNeedType = genericTypeHandle(types).get(0);
-        Log.d(TAG, "-->:" + "Type:" + types[0]);
+//        final Type[] types = callBack.getClass().getGenericInterfaces();
+//        if (genericTypeHandle(types) == null || genericTypeHandle(types).size() == 0) {
+//            return null;
+//        }
+//        final Type finalNeedType = genericTypeHandle(types).get(0);
+        Type genType = callBack.getClass().getGenericSuperclass();
+        Type[] types = ((ParameterizedType) genType).getActualTypeArguments();
+        final Type finalNeedType = types[0];
+        Log.d(TAG,  "FinalNeedType:" + types[0]);
         return (T) apiManager.postForm(url, paramMap)
                 .compose(normalSchedulersTransformer)
                 .compose(this.getExceptionTransformer())
@@ -407,12 +419,15 @@ public final class RandyClient {
      * @return parsed data T
      */
     public <T> T executeJson(final String url, final String jsonStr, final IBaseResponse<T> callBack) {
-        final Type[] types = callBack.getClass().getGenericInterfaces();
-        if (genericTypeHandle(types) == null || genericTypeHandle(types).size() == 0) {
-            return null;
-        }
-        final Type finalNeedType = genericTypeHandle(types).get(0);
-        Log.d(TAG, "-->:" + "Type:" + types[0]);
+//        final Type[] types = callBack.getClass().getGenericInterfaces();
+//        if (genericTypeHandle(types) == null || genericTypeHandle(types).size() == 0) {
+//            return null;
+//        }
+//        final Type finalNeedType = genericTypeHandle(types).get(0);
+        Type genType = callBack.getClass().getGenericSuperclass();
+        Type[] types = ((ParameterizedType) genType).getActualTypeArguments();
+        final Type finalNeedType = types[0];
+        Log.d(TAG,  "FinalNeedType:" + types[0]);
         return (T) apiManager.postRequestBody(url, Utils.createJson(jsonStr))
                 .compose(normalSchedulersTransformer)
                 .compose(this.getExceptionTransformer())
@@ -450,12 +465,15 @@ public final class RandyClient {
      */
     public <T> T executePut(String url, @FieldMap(encoded = true) Map<String, Object> paramMap,
                             IBaseResponse<T> callBack) {
-        final Type[] types = callBack.getClass().getGenericInterfaces();
-        if (genericTypeHandle(types) == null || genericTypeHandle(types).size() == 0) {
-            return null;
-        }
-        final Type finalNeedType = genericTypeHandle(types).get(0);
-        Log.d(TAG, "-->:" + "Type:" + types[0]);
+//        final Type[] types = callBack.getClass().getGenericInterfaces();
+//        if (genericTypeHandle(types) == null || genericTypeHandle(types).size() == 0) {
+//            return null;
+//        }
+//        final Type finalNeedType = genericTypeHandle(types).get(0);
+        Type genType = callBack.getClass().getGenericSuperclass();
+        Type[] types = ((ParameterizedType) genType).getActualTypeArguments();
+        final Type finalNeedType = types[0];
+        Log.d(TAG,  "FinalNeedType:" + types[0]);
         return (T) apiManager.executePut(url, paramMap)
                 .compose(normalSchedulersTransformer)
                 .compose(this.getExceptionTransformer())
@@ -493,12 +511,15 @@ public final class RandyClient {
      */
     public <T> T executeDelete(String url, Map<String, Object> paramMap,
                                IBaseResponse<T> callBack) {
-        final Type[] types = callBack.getClass().getGenericInterfaces();
-        if (genericTypeHandle(types) == null || genericTypeHandle(types).size() == 0) {
-            return null;
-        }
-        final Type finalNeedType = genericTypeHandle(types).get(0);
-        Log.d(TAG, "-->:" + "Type:" + types[0]);
+//        final Type[] types = callBack.getClass().getGenericInterfaces();
+//        if (genericTypeHandle(types) == null || genericTypeHandle(types).size() == 0) {
+//            return null;
+//        }
+//        final Type finalNeedType = genericTypeHandle(types).get(0);
+        Type genType = callBack.getClass().getGenericSuperclass();
+        Type[] types = ((ParameterizedType) genType).getActualTypeArguments();
+        final Type finalNeedType = types[0];
+        Log.d(TAG,  "FinalNeedType:" + types[0]);
         return (T) apiManager.executeDelete(url, paramMap)
                 .compose(normalSchedulersTransformer)
                 .compose(this.getExceptionTransformer())
@@ -756,7 +777,7 @@ public final class RandyClient {
             // if Type is T
             if (paramType instanceof ParameterizedType) {
                 Type[] parentTypes = ((ParameterizedType) paramType).getActualTypeArguments();
-                Log.d(TAG, "TypeArgument: ");
+                Log.d(TAG, "Type Arguments: ");
                 for (Type childType : parentTypes) {
                     Log.d(TAG, "childType:" + childType);
                     needTypes.add(childType);
