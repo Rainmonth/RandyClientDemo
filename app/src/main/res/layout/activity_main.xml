@@ -23,4 +23,12 @@
         android:gravity="center"
         android:text="登录" />
 
+    <TextView
+        android:id="@+id/tv_get_product_list"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_marginTop="16dp"
+        android:gravity="center"
+        android:text="获取产品列表" />
+
 </LinearLayout>

@@ -11,4 +11,6 @@ public class Api {
     public static final String IS_REGISTER = "login/is_registered";
     public static final String REGISTER = "login/signon";
     public static final String LOGOUT = "login/logout";
+
+    public static final String GET_PRODUCT_LIST = "product/searchLoanProducts";
 }
