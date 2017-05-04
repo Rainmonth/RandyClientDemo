@@ -26,7 +26,8 @@ public class DbCacheHelper {
 
     private DbCacheHelper() {
         context = RxRetrofitApp.getApplication();
-        openHelper = new DaoMaster.DevOpenHelper(context, dbName);
+        if (null == openHelper)
+            openHelper = new DaoMaster.DevOpenHelper(context, dbName);
     }
 
     public static DbCacheHelper getInstance() {

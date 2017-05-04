@@ -143,6 +143,12 @@ public class MainActivity extends AppCompatActivity {
         paramMap.put("city", "0");
         paramMap.put("limitCode", "0");
         paramMap.put("termCode", "0");
+        randyClient = new RandyClient.Builder(this)
+                .baseUrl(Api.BaseUrl)
+                .addLog(true)
+                .addLog(true)
+                .addDbCache(true)
+                .build();
         randyClient.executePost(Api.GET_PRODUCT_LIST, paramMap,
                 new BaseCallback<BaseResponse<BaseListData<ProductBean>>>() {
                     @Override
@@ -168,6 +174,8 @@ public class MainActivity extends AppCompatActivity {
                     @Override
                     public void onReadCacheSuccess(BaseResponse<BaseListData<ProductBean>> response) {
                         super.onReadCacheSuccess(response);
+//                        Log.e("onReadCacheSuccess", response.toString());
+                        Log.i("onReadCacheSuccess", response.getMessage());
                     }
 
                     @Override

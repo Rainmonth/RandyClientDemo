@@ -8,6 +8,9 @@ public class SelfDefineThrowable extends Exception {
     int code;
     String message;
 
+    public SelfDefineThrowable() {
+    }
+
     public SelfDefineThrowable(int code, Throwable throwable) {
         super(throwable);
         this.code = code;

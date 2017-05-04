@@ -151,7 +151,7 @@ public final class RandyClient {
     // context
     private static Context mContext;
     // 是否开启数据库缓存
-    private static boolean isDbCache = false;
+    private boolean isDbCache = false;
     private okhttp3.Call.Factory callFactory;
     // download observable
     private Observable<ResponseBody> downloadObservable;
@@ -176,7 +176,7 @@ public final class RandyClient {
      * package constructor
      */
     private RandyClient(okhttp3.Call.Factory callFactory, String baseUrl,
-                        Map<String, String> headers,
+                        Map<String, String> headers, boolean isDbCache,
                         Map<String, String> parameters, BaseApiService apiManager,
                         List<Converter.Factory> converterFactories,
                         List<CallAdapter.Factory> adapterFactories,
@@ -184,6 +184,7 @@ public final class RandyClient {
         RandyClient.headers = headers;
         RandyClient.parameters = parameters;
         RandyClient.apiManager = apiManager;
+        this.isDbCache = isDbCache;
         this.baseUrl = baseUrl;
         this.callFactory = callFactory;
         this.callbackExecutor = callbackExecutor;
@@ -239,7 +240,7 @@ public final class RandyClient {
         Type genType = callBack.getClass().getGenericSuperclass();
         Type[] types = ((ParameterizedType) genType).getActualTypeArguments();
         final Type finalNeedType = types[0];
-        Log.d(TAG,  "FinalNeedType:" + types[0]);
+        Log.d(TAG, "FinalNeedType:" + types[0]);
         return (T) apiManager.executeGet(url, paramMap)
                 .compose(normalSchedulersTransformer)
                 .compose(this.getExceptionTransformer())
@@ -285,7 +286,7 @@ public final class RandyClient {
         Type genType = callBack.getClass().getGenericSuperclass();
         Type[] types = ((ParameterizedType) genType).getActualTypeArguments();
         final Type finalNeedType = types[0];
-        Log.d(TAG,  "FinalNeedType:" + types[0]);
+        Log.d(TAG, "FinalNeedType:" + types[0]);
         BaseSubscriber<T> subscriber = getBaseSubscriber(isDbCache, url, paramMap, callBack, finalNeedType);
         return (T) apiManager.executePost(url, paramMap)
                 .compose(normalSchedulersTransformer)
@@ -297,7 +298,7 @@ public final class RandyClient {
                                                     Map<String, Object> paramMap,
                                                     IBaseResponse<T> callBack, Type finalNeedType) {
 
-        return isDbCache ? new FinalSubscriber(mContext, finalNeedType, url, paramMap, callBack) :
+        return isDbCache ? new FinalSubscriber(mContext, finalNeedType, isDbCache, url, paramMap, callBack) :
                 new FinalSubscriber(mContext, finalNeedType, callBack);
     }
 
@@ -341,7 +342,7 @@ public final class RandyClient {
         Type genType = callBack.getClass().getGenericSuperclass();
         Type[] types = ((ParameterizedType) genType).getActualTypeArguments();
         final Type finalNeedType = types[0];
-        Log.d(TAG,  "FinalNeedType:" + types[0]);
+        Log.d(TAG, "FinalNeedType:" + types[0]);
         return (T) apiManager.executePostBody(url, body)
                 .compose(normalSchedulersTransformer)
                 .compose(this.getExceptionTransformer())
@@ -387,7 +388,7 @@ public final class RandyClient {
         Type genType = callBack.getClass().getGenericSuperclass();
         Type[] types = ((ParameterizedType) genType).getActualTypeArguments();
         final Type finalNeedType = types[0];
-        Log.d(TAG,  "FinalNeedType:" + types[0]);
+        Log.d(TAG, "FinalNeedType:" + types[0]);
         return (T) apiManager.postForm(url, paramMap)
                 .compose(normalSchedulersTransformer)
                 .compose(this.getExceptionTransformer())
@@ -427,7 +428,7 @@ public final class RandyClient {
         Type genType = callBack.getClass().getGenericSuperclass();
         Type[] types = ((ParameterizedType) genType).getActualTypeArguments();
         final Type finalNeedType = types[0];
-        Log.d(TAG,  "FinalNeedType:" + types[0]);
+        Log.d(TAG, "FinalNeedType:" + types[0]);
         return (T) apiManager.postRequestBody(url, Utils.createJson(jsonStr))
                 .compose(normalSchedulersTransformer)
                 .compose(this.getExceptionTransformer())
@@ -473,7 +474,7 @@ public final class RandyClient {
         Type genType = callBack.getClass().getGenericSuperclass();
         Type[] types = ((ParameterizedType) genType).getActualTypeArguments();
         final Type finalNeedType = types[0];
-        Log.d(TAG,  "FinalNeedType:" + types[0]);
+        Log.d(TAG, "FinalNeedType:" + types[0]);
         return (T) apiManager.executePut(url, paramMap)
                 .compose(normalSchedulersTransformer)
                 .compose(this.getExceptionTransformer())
@@ -519,7 +520,7 @@ public final class RandyClient {
         Type genType = callBack.getClass().getGenericSuperclass();
         Type[] types = ((ParameterizedType) genType).getActualTypeArguments();
         final Type finalNeedType = types[0];
-        Log.d(TAG,  "FinalNeedType:" + types[0]);
+        Log.d(TAG, "FinalNeedType:" + types[0]);
         return (T) apiManager.executeDelete(url, paramMap)
                 .compose(normalSchedulersTransformer)
                 .compose(this.getExceptionTransformer())
@@ -1204,6 +1205,7 @@ public final class RandyClient {
 
             if (isDbCache) {
                 DbCacheInterceptor dbCacheInterceptor = new DbCacheInterceptor(isDbCache, baseUrl);
+                okHttpClientBuilder.addInterceptor(dbCacheInterceptor);
             }
 
             /*
@@ -1255,7 +1257,7 @@ public final class RandyClient {
             retrofit = retrofitBuilder.build();
             // create BaseApiService
             apiManager = retrofit.create(BaseApiService.class);
-            return new RandyClient(callFactory, baseUrl, headers, parameters, apiManager,
+            return new RandyClient(callFactory, baseUrl, headers, isDbCache, parameters, apiManager,
                     converterFactories, adapterFactories, callbackExecutor, validateEagerly);
 
 

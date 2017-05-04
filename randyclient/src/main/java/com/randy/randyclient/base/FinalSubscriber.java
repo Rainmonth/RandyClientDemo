@@ -29,8 +29,10 @@ public class FinalSubscriber<T> extends BaseSubscriber<ResponseBody> {
     private IBaseResponse<T> callback;
     private Type finalDataType;
     private boolean isDbCache = false;
-    private boolean isNetworkAvailable = true;
+    private boolean isNetworkAvailable = false;
     private String url;
+
+    private String TAG = FinalSubscriber.class.getSimpleName();
 
     public FinalSubscriber(Context context, Type finalDataType, IBaseResponse<T> callback) {
         super(context);
@@ -41,9 +43,10 @@ public class FinalSubscriber<T> extends BaseSubscriber<ResponseBody> {
     /**
      * 需要数据库缓存时调用的构造函数
      */
-    public FinalSubscriber(Context context, Type finalDataType, String pathUrl,
+    public FinalSubscriber(Context context, Type finalDataType, boolean isDbCache, String pathUrl,
                            Map<String, Object> paramMap, IBaseResponse<T> callback) {
         super(context);
+        this.isDbCache = isDbCache;
         url = getKeyUrl(pathUrl, paramMap);
         this.callback = callback;
         this.finalDataType = finalDataType;
@@ -62,7 +65,7 @@ public class FinalSubscriber<T> extends BaseSubscriber<ResponseBody> {
         try {
             byte[] bytes = body.bytes();
             String jsonStr = new String(bytes);
-            Log.d("OkHttp", "ResponseBody:" + jsonStr);
+            Log.d(TAG, "onNext():" + jsonStr);
             if (null != callback) {
 //                /*
 //                  if need parse baseRespone<T> use ParentType, if parse T use childType.
@@ -125,6 +128,9 @@ public class FinalSubscriber<T> extends BaseSubscriber<ResponseBody> {
             // 获取缓存数据，只处理正确的情况，因为错误的情况在onExceptionError中会处理
             dealWithDbCacheWhenStart(url);
         }
+        if (null != callback) {
+            callback.onStart();
+        }
     }
 
     @SuppressWarnings("unchecked")
@@ -161,7 +167,7 @@ public class FinalSubscriber<T> extends BaseSubscriber<ResponseBody> {
                     .append(String.valueOf(entry.getValue())).append("&");
         }
         sb.delete(sb.length() - 1, sb.length());
-        Log.i(Global.TAG, "url path " + sb.toString());
+        Log.i(TAG, "getKeyUrl " + sb.toString());
         return sb.toString();
     }
 
@@ -175,7 +181,9 @@ public class FinalSubscriber<T> extends BaseSubscriber<ResponseBody> {
         Observable.just(urlKey).subscribe(new Subscriber<String>() {
             @Override
             public void onCompleted() {
-
+                if (null != callback) {
+                    callback.onCompleted();
+                }
             }
 
             @Override
@@ -193,6 +201,7 @@ public class FinalSubscriber<T> extends BaseSubscriber<ResponseBody> {
                     long time = (System.currentTimeMillis() - dbCacheInfo.getCacheTime()) / 1000;
                     if (time < Global.DB_CACHE_VALID_TIME) {
                         if (callback != null) {
+                            Log.i(TAG, "dealWithDbCacheWhenStart" + dbCacheInfo.getCacheContent());
                             callback.onReadCacheSuccess((T) getBaseResponse(dbCacheInfo.getCacheContent()));
                             onCompleted();
                             unsubscribe();
@@ -229,16 +238,22 @@ public class FinalSubscriber<T> extends BaseSubscriber<ResponseBody> {
                 DbCacheInfo dbCacheInfo = DbCacheHelper.getInstance().queryDbCacheByUrl(s);
                 if (dbCacheInfo == null) {
                     if (null != callback) {
-                        callback.onExceptionError(new SelfDefineThrowable
-                                (ExceptionHandle.ERROR.READ_DB_CACHE_ERROR,
-                                        new Exception("读取数据库缓存错误")));
-                        onCompleted();
-                        unsubscribe();
+                        new NullPointerException("缓存为空");
+                        SelfDefineThrowable defineThrowable = new SelfDefineThrowable();
+                        defineThrowable.setCode(ExceptionHandle.ERROR.READ_DB_CACHE_ERROR);
+                        defineThrowable.setMessage("对应缓存为空");
+                        callback.onExceptionError(defineThrowable);
+//                        callback.onExceptionError(new SelfDefineThrowable
+//                                (ExceptionHandle.ERROR.READ_DB_CACHE_ERROR,
+//                                        new Exception("读取数据库缓存错误")));
+//                        onCompleted();
+//                        unsubscribe();
                     }
                 } else {
                     long time = (System.currentTimeMillis() - dbCacheInfo.getCacheTime()) / 1000;
                     if (time < Global.DB_CACHE_VALID_TIME) {
                         if (callback != null) {
+                            Log.i(TAG, "dealWithDbCacheWhenError" + dbCacheInfo.getCacheContent());
                             callback.onReadCacheSuccess((T) getBaseResponse(dbCacheInfo
                                     .getCacheContent()));
                         }
@@ -250,6 +265,8 @@ public class FinalSubscriber<T> extends BaseSubscriber<ResponseBody> {
                                     new Exception("读取数据库缓存错误")));
                         }
                     }
+                    onCompleted();
+                    unsubscribe();
                 }
             }
         });

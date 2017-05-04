@@ -23,12 +23,10 @@ import okio.BufferedSource;
 public class DbCacheInterceptor implements Interceptor {
     private boolean isDbCache = false;
     private String baseUrl;
-    private DbCacheHelper dbCacheHelper;
 
     public DbCacheInterceptor(boolean isDbCache, String baseUrl) {
         this.isDbCache = isDbCache;
         this.baseUrl = baseUrl;
-        this.dbCacheHelper = DbCacheHelper.getInstance();
     }
 
     @Override
@@ -48,15 +46,15 @@ public class DbCacheInterceptor implements Interceptor {
             String bodyString = buffer.clone().readString(charset);
             String dbCacheUrl = getPathUrl(request);
 
-            DbCacheInfo dbCacheInfo = dbCacheHelper.queryDbCacheByUrl(dbCacheUrl);
+            DbCacheInfo dbCacheInfo = DbCacheHelper.getInstance().queryDbCacheByUrl(dbCacheUrl);
             long time = System.currentTimeMillis();
             if (dbCacheInfo == null) {
                 dbCacheInfo = new DbCacheInfo(dbCacheUrl, time, bodyString);
-                dbCacheHelper.saveDbCacheInfo(dbCacheInfo);
+                DbCacheHelper.getInstance().saveDbCacheInfo(dbCacheInfo);
             } else {
                 dbCacheInfo.setCacheTime(time);
                 dbCacheInfo.setCacheContent(bodyString);
-                dbCacheHelper.updateDbCacheInfo(dbCacheInfo);
+                DbCacheHelper.getInstance().updateDbCacheInfo(dbCacheInfo);
             }
         }
 
